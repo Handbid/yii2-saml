@@ -33,6 +33,12 @@ class AcsAction extends BaseAction
     public $successUrl;
 
     /**
+     * Handbid Customization: Model class for the user identity
+     * @var string
+     */
+    public $modelClass;
+
+    /**
      * It handles acs response from Identity Provider. It will check whether the response is valid or not. If it isn't, an Exception will be thrown. If the response is valid, the successCallback will be called. You can use the callback to create user from attributes sent by Identity Provider or do something else. After that, user will be redirected to successUrl.
      * @return $this|mixed
      * @throws Exception
