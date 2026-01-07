@@ -9,7 +9,10 @@ use OneLogin\Saml2\Settings;
 use yii\base\BaseObject;
 
 /**
- * This class wraps OneLogin_Saml2_Auth class by creating an instance of that class using configurations specified in configFileName variable inside @app/config folder.
+ * This class wraps OneLogin_Saml2_Auth class by creating an instance of that class
+ * using configurations specified in configFileName variable inside @app/config folder.
+ *
+ * Handbid Fork: Added dynamic IdP loading from database via idpModelClass config.
  */
 class Saml extends BaseObject
 {
@@ -32,6 +35,12 @@ class Saml extends BaseObject
      */
     public $config;
 
+    /**
+     * The name of the current IdP being used.
+     * @var string|null
+     */
+    private $idpName;
+
     public function init()
     {
         parent::init();
@@ -41,7 +50,77 @@ class Saml extends BaseObject
             $this->config = require($configFile);
         }
 
+        // Handbid: Load IdP from database if idpModelClass is configured
+        $this->loadIdpFromDatabase();
+
         $this->instance = new Auth($this->config);
+    }
+
+    /**
+     * Handbid: Load IdP configuration from database using the configured model class.
+     * This allows dynamic IdP configuration (e.g., Disney SSO) to be stored in the database
+     * rather than in config files.
+     */
+    protected function loadIdpFromDatabase()
+    {
+        // Only proceed if idpModelClass is configured
+        if (empty($this->config['idpModelClass'])) {
+            return;
+        }
+
+        $idpModelClass = $this->config['idpModelClass'];
+
+        // Get IdP name from query param or RelayState body param
+        $request = Yii::$app->getRequest();
+        $this->idpName = $request->getQueryParam('idp');
+
+        if (empty($this->idpName)) {
+            // Try to get from RelayState (used in SAML response callbacks)
+            $relayStateJson = $request->getBodyParam('RelayState');
+            // Also check TargetResource (used by Disney SSO)
+            if (empty($relayStateJson)) {
+                $relayStateJson = $request->getBodyParam('TargetResource');
+            }
+            if (!empty($relayStateJson)) {
+                $relayState = json_decode($relayStateJson, true);
+                if (is_array($relayState) && !empty($relayState['idp'])) {
+                    $this->idpName = $relayState['idp'];
+                }
+            }
+        }
+
+        // Skip IdP validation for certain actions (like metadata)
+        $actionsWithIdPCheckSkipped = $this->config['actionsWithIdPCheckSkipped'] ?? [];
+        if (!empty($actionsWithIdPCheckSkipped)) {
+            $pathInfo = $request->pathInfo ?? '';
+            $urlSegments = explode('/', $pathInfo);
+            $actionId = end($urlSegments);
+            if (in_array($actionId, $actionsWithIdPCheckSkipped)) {
+                // Skip IdP loading for metadata and similar endpoints
+                return;
+            }
+        }
+
+        // Load IdP from database if we have a name
+        if (!empty($this->idpName) && class_exists($idpModelClass)) {
+            $idpModel = $idpModelClass::findOne(['name' => $this->idpName]);
+            if (!empty($idpModel) && method_exists($idpModel, 'getConfigAsArray')) {
+                $this->config['idp'] = $idpModel->configAsArray;
+            }
+        }
+
+        // Remove Handbid-specific config keys before passing to onelogin/php-saml
+        unset($this->config['idpModelClass']);
+        unset($this->config['actionsWithIdPCheckSkipped']);
+    }
+
+    /**
+     * Get the current IdP name.
+     * @return string|null
+     */
+    public function getIdpName()
+    {
+        return $this->idpName;
     }
 
     /**
