@@ -126,6 +126,15 @@ class Saml extends BaseObject
 
         if (!empty($idpModel) && method_exists($idpModel, 'getConfigAsArray')) {
             $this->config['idp'] = $idpModel->configAsArray;
+
+            // Per-IdP SP entityId support: Some IdPs (like Disney) have a different audience
+            // configured that doesn't match our default SP entityId. Override the SP entityId
+            // based on the IdP to pass strict audience validation.
+            $spEntityId = $this->getSpEntityIdForIdp($idpModel);
+            if (!empty($spEntityId)) {
+                $this->config['sp']['entityId'] = $spEntityId;
+                Yii::info("Using SP entityId '{$spEntityId}' for IdP '{$this->idpName}'", 'single_sign_on');
+            }
         }
 
         // Remove Handbid-specific config keys before passing to onelogin/php-saml
@@ -140,6 +149,36 @@ class Saml extends BaseObject
     public function getIdpName()
     {
         return $this->idpName;
+    }
+
+    /**
+     * Get the SP entityId to use for a specific IdP.
+     *
+     * Some IdPs have a different audience configured that doesn't match our default SP entityId.
+     * This method returns the correct SP entityId for the IdP to pass strict audience validation.
+     *
+     * Future: This should be stored in the sso_identity_providers.spEntityId database column.
+     * For now, we use a hardcoded mapping for known IdPs.
+     *
+     * @param object $idpModel The IdP model
+     * @return string|null The SP entityId to use, or null to use the default
+     */
+    protected function getSpEntityIdForIdp($idpModel): ?string
+    {
+        // First check if the IdP model has a spEntityId property (future database support)
+        if (property_exists($idpModel, 'spEntityId') && !empty($idpModel->spEntityId)) {
+            return $idpModel->spEntityId;
+        }
+
+        // Temporary hardcoded mapping until spEntityId column is added to database
+        // TODO: Add spEntityId column to sso_identity_providers table and remove this hardcoding
+        $idpSpEntityIdMap = [
+            'disney' => 'handbid',  // Disney's IdP sends audience='handbid'
+            // 'flyers-charities' uses default 'https://rest.hand.bid/sp' - no override needed
+        ];
+
+        $idpName = $idpModel->name ?? null;
+        return $idpSpEntityIdMap[$idpName] ?? null;
     }
 
     /**
