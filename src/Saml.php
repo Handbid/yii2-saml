@@ -102,11 +102,30 @@ class Saml extends BaseObject
         }
 
         // Load IdP from database if we have a name
+        $idpModel = null;
         if (!empty($this->idpName) && class_exists($idpModelClass)) {
             $idpModel = $idpModelClass::findOne(['name' => $this->idpName]);
-            if (!empty($idpModel) && method_exists($idpModel, 'getConfigAsArray')) {
-                $this->config['idp'] = $idpModel->configAsArray;
+        }
+
+        // Fallback: If IdP not found by name (e.g., RelayState was not preserved by IdP like Comcast Azure AD),
+        // try to detect IdP from the SAML response Issuer element
+        if (empty($idpModel) && class_exists($idpModelClass)) {
+            $samlResponse = $request->getBodyParam('SAMLResponse');
+            if (!empty($samlResponse)) {
+                $xml = base64_decode($samlResponse);
+                if (preg_match('/<Issuer[^>]*>([^<]+)<\/Issuer>/i', $xml, $matches)) {
+                    $issuerEntityId = trim($matches[1]);
+                    $idpModel = $idpModelClass::findOne(['samlEntityId' => $issuerEntityId]);
+                    if (!empty($idpModel)) {
+                        $this->idpName = $idpModel->name;
+                        Yii::info("Detected IdP '{$this->idpName}' from SAML response Issuer: {$issuerEntityId}", 'single_sign_on');
+                    }
+                }
             }
+        }
+
+        if (!empty($idpModel) && method_exists($idpModel, 'getConfigAsArray')) {
+            $this->config['idp'] = $idpModel->configAsArray;
         }
 
         // Remove Handbid-specific config keys before passing to onelogin/php-saml
