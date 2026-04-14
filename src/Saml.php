@@ -152,6 +152,7 @@ class Saml extends BaseObject
         // Remove Handbid-specific config keys before passing to onelogin/php-saml
         unset($this->config['idpModelClass']);
         unset($this->config['actionsWithIdPCheckSkipped']);
+        unset($this->config['idpSpEntityIdMap']);
     }
 
     /**
@@ -166,11 +167,16 @@ class Saml extends BaseObject
     /**
      * Get the SP entityId to use for a specific IdP.
      *
-     * Some IdPs have a different audience configured that doesn't match our default SP entityId.
-     * This method returns the correct SP entityId for the IdP to pass strict audience validation.
+     * Some IdPs (like Disney) have a different audience configured that doesn't match our
+     * default SP entityId. This method returns the correct SP entityId for the IdP to pass
+     * strict audience validation.
      *
-     * Future: This should be stored in the sso_identity_providers.spEntityId database column.
-     * For now, we use a hardcoded mapping for known IdPs.
+     * The mapping is read from the 'idpSpEntityIdMap' key in the SAML component config
+     * (set per-environment in main.php), so test and prod can have different values.
+     *
+     * Example main.php config:
+     *   'idpSpEntityIdMap' => ['disney' => 'handbid-demo']   // test/d3
+     *   'idpSpEntityIdMap' => ['disney' => 'handbid']        // production
      *
      * @param object $idpModel The IdP model
      * @return string|null The SP entityId to use, or null to use the default
@@ -182,13 +188,8 @@ class Saml extends BaseObject
             return $idpModel->spEntityId;
         }
 
-        // Temporary hardcoded mapping until spEntityId column is added to database
-        // TODO: Add spEntityId column to sso_identity_providers table and remove this hardcoding
-        $idpSpEntityIdMap = [
-            'disney' => 'handbid',  // Disney's IdP sends audience='handbid'
-            // 'flyers-charities' uses default 'https://rest.hand.bid/sp' - no override needed
-        ];
-
+        // Read per-IdP SP entityId overrides from the component config (environment-specific)
+        $idpSpEntityIdMap = $this->config['idpSpEntityIdMap'] ?? [];
         $idpName = $idpModel->name ?? null;
         return $idpSpEntityIdMap[$idpName] ?? null;
     }
