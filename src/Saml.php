@@ -41,6 +41,13 @@ class Saml extends BaseObject
      */
     private $idpName;
 
+    /**
+     * Whether the IdP was successfully loaded from the database.
+     * Used to skip Auth instantiation for actions that don't need an IdP (e.g., saml-metadata).
+     * @var bool
+     */
+    private $idpLoaded = false;
+
     public function init()
     {
         parent::init();
@@ -53,7 +60,11 @@ class Saml extends BaseObject
         // Handbid: Load IdP from database if idpModelClass is configured
         $this->loadIdpFromDatabase();
 
-        $this->instance = new Auth($this->config);
+        // Only instantiate Auth if an IdP was loaded. For actions like saml-metadata,
+        // the IdP is not needed and Auth instantiation would fail with idp_not_found.
+        if ($this->idpLoaded) {
+            $this->instance = new Auth($this->config);
+        }
     }
 
     /**
@@ -126,6 +137,7 @@ class Saml extends BaseObject
 
         if (!empty($idpModel) && method_exists($idpModel, 'getConfigAsArray')) {
             $this->config['idp'] = $idpModel->configAsArray;
+            $this->idpLoaded = true;
 
             // Per-IdP SP entityId support: Some IdPs (like Disney) have a different audience
             // configured that doesn't match our default SP entityId. Override the SP entityId
