@@ -124,7 +124,7 @@ class Saml extends BaseObject
             $samlResponse = $request->getBodyParam('SAMLResponse');
             if (!empty($samlResponse)) {
                 $xml = base64_decode($samlResponse);
-                if (preg_match('/<Issuer[^>]*>([^<]+)<\/Issuer>/i', $xml, $matches)) {
+                if (preg_match('/<(?:[\w-]+:)?Issuer[^>]*>([^<]+)<\/(?:[\w-]+:)?Issuer>/i', $xml, $matches)) {
                     $issuerEntityId = trim($matches[1]);
                     $idpModel = $idpModelClass::findOne(['samlEntityId' => $issuerEntityId]);
                     if (!empty($idpModel)) {
