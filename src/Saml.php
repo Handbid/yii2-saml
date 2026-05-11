@@ -57,6 +57,14 @@ class Saml extends BaseObject
             $this->config = require($configFile);
         }
 
+        // Handbid: trust X-Forwarded-Proto/Host/Port when behind a reverse proxy
+        // (e.g. lighttpd → PHP-FPM uses HTTP internally even when client uses HTTPS).
+        // Without this, OneLogin sees Destination="https://..." but $_SERVER as http://,
+        // causing "invalid_response: received at http://... instead of https://..."
+        if (class_exists('\\OneLogin\\Saml2\\Utils')) {
+            \OneLogin\Saml2\Utils::setProxyVars(true);
+        }
+
         // Handbid: Load IdP from database if idpModelClass is configured
         $this->loadIdpFromDatabase();
 
