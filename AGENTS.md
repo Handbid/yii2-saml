@@ -1,5 +1,5 @@
 # AGENTS.md — yii2-saml
-<!-- HB-KB:BEGIN operating-card kb=7914d720a4ca7704016c402496be05fa18f3b884 -->
+<!-- HB-KB:BEGIN operating-card kb=a60ff0c0c5f80b9a1600a8a8cf94e2fac4725b89 -->
 ## Handbid operating card (generated from hb-kb; do not edit here)
 
 Every Handbid agent and human follows this card. It is stamped from hb-kb by `hbkb-adapters sync` and checked in CI; change it only by an hb-kb PR.
@@ -16,6 +16,7 @@ Every Handbid agent and human follows this card. It is stamped from hb-kb by `hb
 10. **Review sub-agents** get raw artifacts (logs, code, ledgers), never your reasoning. Verify every claim they return. An absence needs a witness: "did not run" and "did not work" look the same in a log. See [known-agent-mistakes](../hb-kb/engineering/ai-agents/known-agent-mistakes.md).
 11. **Safety.** No secrets or PII anywhere; credentials only via the 1Password tooling. Production changes, release merges, deploys and destructive operations need the documented human approval. Linear through the API tooling, never the MCP connector. See [security-standards](../hb-kb/engineering/security/security-standards.md).
 12. **Record decisions** in the spec or KB in the same session, tagged `AS-BUILT (YYYY-MM-DD)`. Every artifact (code, Linear, specs, commits) is in English. See [spec-currency](../hb-kb/engineering/sdlc/spec-currency.md).
+13. **Start work.** A card-shaped request ('fix / work on / pick up / continue HAN-NNNN', or a bare card id) runs start-work first: read the card's state, act only as that stage allows, stop at its gate. See [start-work](../hb-kb/engineering/ai-agents/start-work.md).
 <!-- HB-KB:END operating-card -->
 
 **ARCHIVED — do not work here** unless the product owner names this repo.
