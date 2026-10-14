@@ -1,5 +1,5 @@
 # AGENTS.md — yii2-saml
-<!-- HB-KB:BEGIN operating-card kb=df8f0b25420f39d22ed83bb15cd4628f50703288 -->
+<!-- HB-KB:BEGIN operating-card kb=e6cccbc3f58a4f384f1341edf919f830b630f424 -->
 ## Handbid operating card (generated from hb-kb; do not edit here)
 
 Every Handbid agent and human follows this card. It is stamped from hb-kb by `hbkb-adapters sync` and checked in CI; change it only by an hb-kb PR.
@@ -11,7 +11,7 @@ Every Handbid agent and human follows this card. It is stamped from hb-kb by `hb
 5. **Lanes.** One cake = one `hb-env` lane slug = one branch, worktree set, env and `hb-envs/<slug>/handoff.md`. Never switch a canonical checkout's branch. Keep the handoff current. See [lane-handoff-standard](../hb-kb/engineering/ai-agents/lane-handoff-standard.md).
 6. **Routing.** Code the deployed app runs, and migrations, go in `yii2-handbid-ext`. Wrapper tooling, Docker, env templates and docs go in `yii2-handbid`. Never edit `vendor/`. Cite test results with the commit pin, from your own lane. See [agent-worktrees-and-repo-routing](../hb-kb/engineering/standards/agent-worktrees-and-repo-routing.md).
 7. **Pipeline.** Spec Drafting → Independent Spec Review → hardening kickoff → In Dev → Independent Audit → PR review → Ready to Merge → Ready for QA; the full state list and every exit are in [stages-and-gates](../hb-kb/engineering/sdlc/stages-and-gates.md). Read its § Human gates before any state change.
-8. **Hardening.** Every behaviour-changing card gets a blind pass (kickoff before In Dev) or a PO-declared Urgent-fix lane. READY: ≥ Ready to Merge AND (`Hardening-Passed` or `Urgent-Fix-Verified`) AND `Mutations-Passed`, hosted review `CLEAR` at head. See [hardening-phase](../hb-kb/engineering/sdlc/hardening-phase.md).
+8. **Hardening.** The merge gate's risk tier (T0 docs, T1 tooling, T1G control plane, T2 product, T3 money/auth/PII/schema) picks the controls; T2/T3 get a blind pass or PO-declared Urgent-fix lane; tiers only rise. READY: tier labels + hosted `CLEAR` at head. See [hardening-phase](../hb-kb/engineering/sdlc/hardening-phase.md).
 9. **Rulings.** Nobody rules on their own findings except by a recorded routine ruling (complete evidence, no protected path), product-owner override, or the card's declared product decider; otherwise the implementer runs `scripts/hb-adjudicate-spawn` and never asks the human itself. See [hardening-phase](../hb-kb/engineering/sdlc/hardening-phase.md).
 10. **Review sub-agents** get raw artifacts (logs, code, ledgers), never your reasoning. Verify every claim they return. An absence needs a witness ("did not run" reads like "did not work"). See [known-agent-mistakes](../hb-kb/engineering/ai-agents/known-agent-mistakes.md).
 11. **Safety.** No secrets or PII; credentials only via the 1Password tooling. Production changes, release merges and deploys need human approval; destructive git/file commands (reset --hard, force push, rm -rf) are the human's. Linear via the API tooling, never MCP. See [security-standards](../hb-kb/engineering/security/security-standards.md).
