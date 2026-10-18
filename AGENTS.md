@@ -1,5 +1,5 @@
 # AGENTS.md — yii2-saml
-<!-- HB-KB:BEGIN operating-card kb=e6cccbc3f58a4f384f1341edf919f830b630f424 -->
+<!-- HB-KB:BEGIN operating-card kb=66ab46b44c955edd9c5ce2caea244261f7675155 -->
 ## Handbid operating card (generated from hb-kb; do not edit here)
 
 Every Handbid agent and human follows this card. It is stamped from hb-kb by `hbkb-adapters sync` and checked in CI; change it only by an hb-kb PR.
@@ -14,7 +14,7 @@ Every Handbid agent and human follows this card. It is stamped from hb-kb by `hb
 8. **Hardening.** The merge gate's risk tier (T0 docs, T1 tooling, T1G control plane, T2 product, T3 money/auth/PII/schema) picks the controls; T2/T3 get a blind pass or PO-declared Urgent-fix lane; tiers only rise. READY: tier labels + hosted `CLEAR` at head. See [hardening-phase](../hb-kb/engineering/sdlc/hardening-phase.md).
 9. **Rulings.** Nobody rules on their own findings except by a recorded routine ruling (complete evidence, no protected path), product-owner override, or the card's declared product decider; otherwise the implementer runs `scripts/hb-adjudicate-spawn` and never asks the human itself. See [hardening-phase](../hb-kb/engineering/sdlc/hardening-phase.md).
 10. **Review sub-agents** get raw artifacts (logs, code, ledgers), never your reasoning. Verify every claim they return. An absence needs a witness ("did not run" reads like "did not work"). See [known-agent-mistakes](../hb-kb/engineering/ai-agents/known-agent-mistakes.md).
-11. **Safety.** No secrets or PII; credentials only via the 1Password tooling. Production changes, release merges and deploys need human approval; destructive git/file commands (reset --hard, force push, rm -rf) are the human's. Linear via the API tooling, never MCP. See [security-standards](../hb-kb/engineering/security/security-standards.md).
+11. **Safety.** No secrets or PII; credentials only via 1Password tooling. Prod changes, release merges (bar T0/T1, HAN-4283) and deploys need human approval; destructive commands (reset --hard, force push, rm -rf) are human-only. Linear via API tooling, never MCP. See [security-standards](../hb-kb/engineering/security/security-standards.md).
 12. **Record decisions** in the spec or KB in the same session, tagged `AS-BUILT (YYYY-MM-DD)`. Every artifact (code, Linear, specs, commits) is in English. See [spec-currency](../hb-kb/engineering/sdlc/spec-currency.md).
 13. **Start work.** A card-shaped request ('fix / work on / pick up / continue HAN-NNNN', or a bare card id) runs start-work first: read the card's state, act only as that stage allows, stop at its gate. See [start-work](../hb-kb/engineering/ai-agents/start-work.md).
 <!-- HB-KB:END operating-card -->
